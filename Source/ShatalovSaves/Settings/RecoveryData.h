@@ -65,5 +65,15 @@ private:
 
 	class UHelloNeighborRebornGameInstance* pGameInstance;
 	class AHelloNeighborRebornGameMode* pGameMode;
-	
+
+	UPROPERTY()
+	TSoftClassPtr<AActor> ClassGeneratedBy;
+
+	static FString GetNameFromSubpath(const FString& InputString)
+	{
+		int32 DotIndex = InputString.Find(TEXT("."), ESearchCase::IgnoreCase, ESearchDir::FromStart);
+		if (DotIndex != INDEX_NONE)
+			return InputString.Mid(DotIndex + 1);
+		return TEXT("");
+	}
 };

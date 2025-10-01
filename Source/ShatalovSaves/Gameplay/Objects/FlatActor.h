@@ -37,11 +37,12 @@ public:
 	virtual void OnLoad_Implementation(class UJSONLibrary* JsonObject) {};
 	virtual void Load(class UJSONLibrary* JsonObject);
 
-
 	// Works like Begin Play, but after loading a save game.
 	UFUNCTION(BlueprintNativeEvent)
 	void OnPostLoad();
 	virtual void OnPostLoad_Implementation() {};
+
+	bool bLoadData;
 
 private:
 	/* Save FlatComponent
@@ -50,7 +51,7 @@ private:
 	TEnumAsByte<EFlatType> FlatTypeLoaded;
 	UPROPERTY()
 	TEnumAsByte<EFlatMode> FlatModeLoaded;
-	UPROPERTY()
 	*/
-	TSoftClassPtr<AFlatActor> ClassGeneratedBy;
+	UPROPERTY()
+	TSoftClassPtr<AActor> ClassGeneratedBy;
 };

@@ -320,7 +320,12 @@ bool USaveSystem::DownloadLastSave(TSharedPtr<FJsonObject>& JsonObject)
 	if (Saves.Num() == 0)
 		return false;
 
-	return DecryptGameFile(Saves[0].FileName, JsonObject);
+	FString FileName;
+	if (!m_oSlotData.FileName.IsEmpty())
+		FileName = m_oSlotData.FileName;
+	else FileName = Saves[0].FileName;
+
+	return DecryptGameFile(FileName, JsonObject);
 }
 
 void USaveSystem::LoadData()

@@ -20,7 +20,7 @@ void AFlatActor::Tick(float DeltaTime)
 
 void AFlatActor::Save(class UJSONLibrary* JsonObject)
 {
-    ClassGeneratedBy = TSoftClassPtr<AFlatActor>(GetClass());
+    ClassGeneratedBy = TSoftClassPtr<AActor>(GetClass());
     FProperty* PropClass = FindFProperty(AFlatActor, ClassGeneratedBy);
     JsonObject->SetValueAsWildcard("ClassGeneratedBy", PropClass, &ClassGeneratedBy);
 
@@ -42,6 +42,23 @@ void AFlatActor::Save(class UJSONLibrary* JsonObject)
 
 void AFlatActor::Load(UJSONLibrary* JsonObject)
 {
-    // WIP
+    /* Load FlatComponent
+   *
+   FProperty* PropFT = FindFProperty(AFlatActor, FlatTypeLoaded);
+   JsonObject->GetValueAsWildcard("Type", PropFT, &FlatTypeLoaded);
+   FlatComponent->SetFlatType(FlatTypeLoaded);
+
+   FProperty* PropFM = FindFProperty(AFlatActor, FlatModeLoaded);
+   JsonObject->SetValueAsWildcard("Mode", PropFM, &FlatModeLoaded);
+   FlatComponent->SetFlatMode(FlatModeLoaded);
+    */
+    
+    FTransform LoadedTransform;
+    JsonObject->GetValueAsTransform("Transform", LoadedTransform);
+
+    /*if (FlatTypeLoaded == FT_Static)*/
+        SetActorTransform(LoadedTransform);
+
+	OnLoad(JsonObject);
 }
 

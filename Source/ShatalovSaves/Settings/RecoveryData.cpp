@@ -32,6 +32,9 @@ void URecoveryData::PostLoad()
 
 		if (!IsValid(FlatActor))
 			continue;
+		
+		if (!FlatActor->bLoadData && bIsLoadData && pGameInstance->GetSaveSystem()->GetSaveCount() > 0)
+			FlatActor->Destroy();
 
 		FlatActor->OnPostLoad();
 	}
@@ -78,17 +81,81 @@ void URecoveryData::LoadObjects()
 	
 	UJSONLibrary* LoadedSave = NewObject<UJSONLibrary>();
 	
-	if (!pGameInstance->GetSaveSystem()->m_oSlotData.FileName.IsEmpty())
-	{
-		USaveSystem* SaveSys = pGameInstance->GetSaveSystem();
-		SaveSys->DecryptGameFile(SaveSys->m_oSlotData.FileName, LoadedSave->JsonParsed);
-		SaveSys->m_oSlotData = FSlotData();
-	}
-	else pGameInstance->GetSaveSystem()->DownloadLastSave(LoadedSave->JsonParsed); 
-
+	pGameInstance->GetSaveSystem()->DownloadLastSave(LoadedSave->JsonParsed); 
 	UE_LOG(LogShatalovSaves, Log, TEXT("URecoveryData::LoadObjects()"));
 
-	// WIP...
+	UJSONLibrary* MapsObject;
+	if (!LoadedSave->GetValueAsObject("Maps", MapsObject))
+		return;
+
+	// Select current Level
+	UJSONLibrary* CurrentLevel;
+	if (MapsObject->GetValueAsObject(pGameMode->GetWorld()->GetCurrentLevel()->GetOutermost()->GetPathName(), CurrentLevel))
+	{
+		UJSONLibrary* FlatObjects;
+		CurrentLevel->GetValueAsObject("Objects", FlatObjects);
+
+		TArray<FString> FlatSoftNames;
+		FlatObjects->GetFieldNames(FlatSoftNames);
+
+		// Load FlatActors
+		for (FString FlatSoft : FlatSoftNames)
+		{
+			// Get reference to FlatActor on Level
+			AFlatActor* FlatActor = Cast<AFlatActor>(UJSONLibrary::ResolveStringSoftReference(FlatSoft).Get());
+			
+			// Get FlatActor Data
+			UJSONLibrary* FlatSave;
+			FlatObjects->GetObjectByKey(FlatSoft, FlatSave);
+
+			// Spawn FlatActor if not valid
+			if (!IsValid(FlatActor))
+			{
+				FProperty* PropClass = FindFProperty(URecoveryData, ClassGeneratedBy);
+				FlatSave->GetValueAsWildcard("ClassGeneratedBy", PropClass, &ClassGeneratedBy);
+
+				// Need to restore the ID Name for objects, otherwise they may be accidentally deleted.
+				FActorSpawnParameters SpawnParameters;
+				SpawnParameters.Name = FName(GetNameFromSubpath(FSoftObjectPath(FlatSoft).GetSubPathString()));
+
+				FTransform Transform;
+				FlatSave->GetValueAsTransform("Transform", Transform);
+
+				FlatActor = Cast<AFlatActor>(GetWorld()->SpawnActor<AActor>(ClassGeneratedBy.Get(), Transform, SpawnParameters));
+				if (!IsValid(FlatActor)) return;
+			}
+
+			FlatActor->bLoadData = true;
+			FlatActor->Load(FlatSave);
+		}
+
+		// Load Player
+		UJSONLibrary* HumanSave;
+		if (CurrentLevel->GetValueAsObject("Human", HumanSave))
+		{
+			/*
+			AHuman* Human = AHuman::FindHuman(this, FGetHuman(FH_LOCAL)).Human;
+			if (IsValid(Human))
+			{
+				Human->OnLoad(HumanSave);
+			}
+			*/
+		}
+
+		// Load Neighbor
+		UJSONLibrary* NeighborSave;
+		if (CurrentLevel->GetValueAsObject("Neighbor", NeighborSave))
+		{
+			/*
+			ASosed* Sosed = ASosed::FindSosed(this);
+			if (IsValid(Sosed))
+			{
+				Sosed->OnLoad(NeighborSave);
+			}
+			*/
+		}
+
+	}
 }
 
 void URecoveryData::Save(FString LevelName, FSaveParams Params, ESaveOwner Type)
