@@ -22,7 +22,7 @@ Perhaps the original developers were Igor Belov and one of the tinyBuild program
 |:-:|:-:|
 ![GameInstance](Resources/GameInstance.png) | ![GameMode](Resources/GameMode.png) |
 
-<p align="center">
+<div align="center">
     <img src="Resources/FlatActor.png" /><br />
     FlatActor OnLoad/OnSave
-</p>
+</div>
