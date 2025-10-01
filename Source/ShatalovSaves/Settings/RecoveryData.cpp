@@ -33,7 +33,7 @@ void URecoveryData::PostLoad()
 		if (!IsValid(FlatActor))
 			continue;
 		
-		if (!FlatActor->bLoadData && bIsLoadData && pGameInstance->GetSaveSystem()->GetSaveCount() > 0)
+		if (!FlatActor->bLoadData && bLevelLoaded)
 			FlatActor->Destroy();
 
 		FlatActor->OnPostLoad();
@@ -81,7 +81,9 @@ void URecoveryData::LoadObjects()
 	
 	UJSONLibrary* LoadedSave = NewObject<UJSONLibrary>();
 	
-	pGameInstance->GetSaveSystem()->DownloadLastSave(LoadedSave->JsonParsed); 
+	if (!pGameInstance->GetSaveSystem()->DownloadLastSave(LoadedSave->JsonParsed))
+		return;
+
 	UE_LOG(LogShatalovSaves, Log, TEXT("URecoveryData::LoadObjects()"));
 
 	UJSONLibrary* MapsObject;
@@ -90,7 +92,8 @@ void URecoveryData::LoadObjects()
 
 	// Select current Level
 	UJSONLibrary* CurrentLevel;
-	if (MapsObject->GetValueAsObject(pGameMode->GetWorld()->GetCurrentLevel()->GetOutermost()->GetPathName(), CurrentLevel))
+	bLevelLoaded = MapsObject->GetValueAsObject(pGameMode->GetWorld()->GetCurrentLevel()->GetOutermost()->GetPathName(), CurrentLevel);
+	if (bLevelLoaded)
 	{
 		UJSONLibrary* FlatObjects;
 		CurrentLevel->GetValueAsObject("Objects", FlatObjects);

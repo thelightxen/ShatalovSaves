@@ -57,7 +57,7 @@ public:
 
 	void DeleteSaveFile();
 
-	bool bIsLoadData;
+	bool bIsLoadData, bLevelLoaded;
 
 private:
 	// DEPRECATED
