@@ -1,0 +1,7 @@
+Binaries/
+.vs/
+.rider/
+DervedDataCache/
+Intermediate/
+Saved/
+*.sln
